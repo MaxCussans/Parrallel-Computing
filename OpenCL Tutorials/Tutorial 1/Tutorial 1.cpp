@@ -33,7 +33,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 		while (getline(file, buffer))
 		{
 			//counter for columns in txt file
-			int columnCount = 0;
+			short columnCount = 0;
 			string tempPlace;
 			int tempYear;
 			int tempMonth;
@@ -50,6 +50,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					//parse
 					txt += buffer[i];
 				}
+				//if at place column
 				else if (buffer[i] == ' ' && columnCount == 0)
 				{
 					//parse place
@@ -57,6 +58,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					columnCount++;
 					txt = "";
 				}
+				//if at year column
 				else if (buffer[i] == ' ' && columnCount == 1)
 				{
 					//parse year
@@ -64,6 +66,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					columnCount++;
 					txt = "";
 				}
+				//if at month column
 				else if (buffer[i] == ' ' && columnCount == 2)
 				{
 					//parse month
@@ -71,6 +74,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					columnCount++;
 					txt = "";
 				}
+				//if at day column
 				else if (buffer[i] == ' ' && columnCount == 3)
 				{
 					//parse day
@@ -78,6 +82,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					columnCount++;
 					txt = "";
 				}
+				//if at time column
 				else if (buffer[i] == ' ' && columnCount == 4)
 				{
 					//parse time
@@ -85,6 +90,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					columnCount++;
 					txt = "";
 				}
+				//if at end of line
 				else if (buffer[i] == ' ' && columnCount == 5)
 				{
 					//parse temperature
