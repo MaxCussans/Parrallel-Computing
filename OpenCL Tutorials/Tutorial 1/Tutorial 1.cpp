@@ -103,3 +103,96 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
+
+
+void readFile(char* filepath, vector<string> place, std::vector<int> year, vector<int> month, vector<int> day, vector<int> time, vector <double> temperature)
+{
+	ifstream file;
+	string buffer;
+	string txt;
+
+	if (filepath != nullptr)
+	{
+		file.open(filepath);
+	}
+	if (file.is_open())
+	{
+		while (getline(file, buffer))
+		{
+			//counter for columns in txt file
+			int columnCount = 0;
+			string tempPlace;
+			int tempYear;
+			int tempMonth;
+			int tempDay;
+			int tempTime;
+			double tempTemperature;
+
+
+
+			
+				//Start at the beginning of each line
+			for (int i = 0; i < buffer.size(); i++)
+			{
+				//ignore space characters
+				if (buffer[i] != ' ')
+				{
+					//parse
+					txt += buffer[i];
+				}
+				else if (buffer[i] == ' ' && columnCount == 0)
+				{
+					//parse place
+					tempPlace = txt;
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 1)
+				{
+					//parse year
+					tempYear = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 2)
+				{
+					//parse month
+					tempMonth = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 3)
+				{
+					//parse day
+					tempDay = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 4)
+				{
+					//parse time
+					tempTime = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 5)
+				{
+					//parse temperature
+					tempTemperature = stod(txt);
+					columnCount++;
+					txt = "";
+				}
+			}
+			//fill each vector with the corresponding values
+			place.push_back(tempPlace);
+			year.push_back(tempYear);
+			month.push_back(tempMonth);
+			day.push_back(tempDay);
+			time.push_back(tempTime);
+			temperature.push_back(tempTemperature);
+		}
+		//finished parsing
+		file.close();
+	}
+
+}
