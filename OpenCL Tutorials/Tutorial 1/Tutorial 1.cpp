@@ -91,7 +91,7 @@ void readFile(char* filepath, vector<string> place, vector<int> year, vector<int
 					txt = "";
 				}
 				//if at end of line
-				else if (buffer[i] == ' ' && columnCount == 5)
+				else if (buffer[i] == '\n' && columnCount == 5)
 				{
 					//parse temperature
 					tempTemperature = stod(txt);
