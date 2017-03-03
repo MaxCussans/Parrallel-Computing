@@ -18,6 +18,95 @@ void print_help() {
 	cerr << "  -h : print this message" << endl;
 }
 
+void readFile(char* filepath, vector<string> place, vector<int> year, vector<int> month, vector<int> day, vector<string> time, vector <double> temperature)
+{
+	ifstream file;
+	string buffer;
+	string txt;
+
+	if (filepath != nullptr)
+	{
+		file.open(filepath);
+	}
+	if (file.is_open())
+	{
+		while (getline(file, buffer))
+		{
+			//counter for columns in txt file
+			int columnCount = 0;
+			string tempPlace;
+			int tempYear;
+			int tempMonth;
+			int tempDay;
+			string tempTime;
+			double tempTemperature;
+
+			//Start at the beginning of each line
+			for (int i = 0; i < buffer.size(); i++)
+			{
+				//ignore space characters
+				if (buffer[i] != ' ')
+				{
+					//parse
+					txt += buffer[i];
+				}
+				else if (buffer[i] == ' ' && columnCount == 0)
+				{
+					//parse place
+					tempPlace = txt;
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 1)
+				{
+					//parse year
+					tempYear = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 2)
+				{
+					//parse month
+					tempMonth = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 3)
+				{
+					//parse day
+					tempDay = stoi(txt);
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 4)
+				{
+					//parse time
+					tempTime = txt;
+					columnCount++;
+					txt = "";
+				}
+				else if (buffer[i] == ' ' && columnCount == 5)
+				{
+					//parse temperature
+					tempTemperature = stod(txt);
+					txt = "";
+				}
+			}
+			//fill each vector with the corresponding values
+			place.push_back(tempPlace);
+			year.push_back(tempYear);
+			month.push_back(tempMonth);
+			day.push_back(tempDay);
+			time.push_back(tempTime);
+			temperature.push_back(tempTemperature);
+		}
+		//finished parsing
+		file.close();
+	}
+
+}
+
+
 int main(int argc, char **argv) {
 	//Part 1 - handle command line options such as device selection, verbosity, etc.
 	int platform_id = 0;
@@ -64,6 +153,15 @@ int main(int argc, char **argv) {
 		//host - input
 		vector<int> A = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; //C++11 allows this type of initialisation
 		vector<int> B = { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0 };
+
+		vector<string> place;
+		vector<int> year;
+		vector<int> month;
+		vector<int> day; 
+		vector<string> time; 
+		vector <double> temperature;
+		char* filepath = "temp_lincolnshire.txt";
+		readFile(filepath, place, year, month, day, time, temperature);
 		
 		size_t vector_elements = A.size();//number of elements
 		size_t vector_size = A.size()*sizeof(int);//size in bytes
@@ -104,95 +202,3 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-
-void readFile(char* filepath, vector<string> place, std::vector<int> year, vector<int> month, vector<int> day, vector<int> time, vector <double> temperature)
-{
-	ifstream file;
-	string buffer;
-	string txt;
-
-	if (filepath != nullptr)
-	{
-		file.open(filepath);
-	}
-	if (file.is_open())
-	{
-		while (getline(file, buffer))
-		{
-			//counter for columns in txt file
-			int columnCount = 0;
-			string tempPlace;
-			int tempYear;
-			int tempMonth;
-			int tempDay;
-			int tempTime;
-			double tempTemperature;
-
-
-
-			
-				//Start at the beginning of each line
-			for (int i = 0; i < buffer.size(); i++)
-			{
-				//ignore space characters
-				if (buffer[i] != ' ')
-				{
-					//parse
-					txt += buffer[i];
-				}
-				else if (buffer[i] == ' ' && columnCount == 0)
-				{
-					//parse place
-					tempPlace = txt;
-					columnCount++;
-					txt = "";
-				}
-				else if (buffer[i] == ' ' && columnCount == 1)
-				{
-					//parse year
-					tempYear = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				else if (buffer[i] == ' ' && columnCount == 2)
-				{
-					//parse month
-					tempMonth = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				else if (buffer[i] == ' ' && columnCount == 3)
-				{
-					//parse day
-					tempDay = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				else if (buffer[i] == ' ' && columnCount == 4)
-				{
-					//parse time
-					tempTime = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				else if (buffer[i] == ' ' && columnCount == 5)
-				{
-					//parse temperature
-					tempTemperature = stod(txt);
-					columnCount++;
-					txt = "";
-				}
-			}
-			//fill each vector with the corresponding values
-			place.push_back(tempPlace);
-			year.push_back(tempYear);
-			month.push_back(tempMonth);
-			day.push_back(tempDay);
-			time.push_back(tempTime);
-			temperature.push_back(tempTemperature);
-		}
-		//finished parsing
-		file.close();
-	}
-
-}
