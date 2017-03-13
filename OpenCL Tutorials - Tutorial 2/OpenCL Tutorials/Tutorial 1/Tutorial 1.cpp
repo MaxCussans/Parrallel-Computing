@@ -65,8 +65,14 @@ int main(int argc, char **argv) {
 
 		//Part 4 - memory allocation
 		//host - input
-		std::vector<int> A = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; //C++11 allows this type of initialisation
-		std::vector<int> B = { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0 };
+		std::vector<int> A; //C++11 allows this type of initialisation
+		std::vector<int> B;
+
+		for (int i = 0; i < 64; i++)
+		{
+			A.push_back(i);
+			B.push_back(i + 1);
+		}
 		
 		size_t vector_elements = A.size();//number of elements
 		size_t vector_size = A.size()*sizeof(int);//size in bytes
@@ -97,7 +103,7 @@ int main(int argc, char **argv) {
 		//the maximum workgroup size
 		cerr << kernel_add.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device) << endl;//get info
 
-		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(vector_elements), cl::NullRange);
+		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(vector_elements), kernel_add.getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
 
 		//5.3 Copy the result from device to host
 		queue.enqueueReadBuffer(buffer_C, CL_TRUE, 0, vector_size, &C[0]);
