@@ -91,10 +91,11 @@ int main(int argc, char **argv) {
 		kernel_add.setArg(1, buffer_B);
 		kernel_add.setArg(2, buffer_C);
 
-		//get preferred work group size
+		//get preferred work group size (multiples also work up to the maximum)
 		cl::Device device = context.getInfo<CL_CONTEXT_DEVICES>()[0]; //get device
-		cerr << kernel_add.getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>
-		(device) << endl; //get info
+		cerr << kernel_add.getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE> (device) << endl; 
+		//the maximum workgroup size
+		cerr << kernel_add.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device) << endl;//get info
 
 		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(vector_elements), cl::NullRange);
 
