@@ -46,3 +46,5 @@ __kernel void convolution2D(__global const uchar4* A, __global uchar4* B, __cons
 
 	B[id] = convert_uchar4(result); //convert back to uchar4
 }
+
+__kernel void filter_r
