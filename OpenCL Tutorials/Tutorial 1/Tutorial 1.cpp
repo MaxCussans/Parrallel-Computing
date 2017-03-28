@@ -18,99 +18,24 @@ void print_help() {
 	cerr << "  -h : print this message" << endl;
 }
 
-void readFile(char* filepath, vector<string> place, vector<int> year, vector<int> month, vector<int> day, vector<string> time, vector <double> temperature)
+
+float* read(const char* filepath, int length)
 {
-	ifstream file;
-	string buffer;
-	string txt;
+	float* temp = new float[length];
 
-	if (filepath != nullptr)
+	FILE* data = fopen(filepath, "r");
+
+	for(int i = 0; i < length; i++)
 	{
-		file.open(filepath);
+		fscanf(data, "%*s %*lf %*lf %*lf %*lf %f", &temp[i]);
 	}
-	if (file.is_open())
-	{
-		while (getline(file, buffer))
-		{
-			//counter for columns in txt file
-			short columnCount = 0;
-			string tempPlace;
-			int tempYear;
-			int tempMonth;
-			int tempDay;
-			string tempTime;
-			double tempTemperature;
+	fclose(data);
 
-			//Start at the beginning of each line
-			for (int i = 0; i < buffer.size(); i++)
-			{
-				//ignore space characters
-				if (buffer[i] != ' ')
-				{
-					//parse
-					txt += buffer[i];
-				}
-				//if at place column
-				else if (buffer[i] == ' ' && columnCount == 0)
-				{
-					//parse place
-					tempPlace = txt;
-					columnCount++;
-					txt = "";
-				}
-				//if at year column
-				else if (buffer[i] == ' ' && columnCount == 1)
-				{
-					//parse year
-					tempYear = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				//if at month column
-				else if (buffer[i] == ' ' && columnCount == 2)
-				{
-					//parse month
-					tempMonth = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				//if at day column
-				else if (buffer[i] == ' ' && columnCount == 3)
-				{
-					//parse day
-					tempDay = stoi(txt);
-					columnCount++;
-					txt = "";
-				}
-				//if at time column
-				else if (buffer[i] == ' ' && columnCount == 4)
-				{
-					//parse time
-					tempTime = txt;
-					columnCount++;
-					txt = "";
-				}
-				//if at end of line
-				else if (buffer[i] == '\n' && columnCount == 5)
-				{
-					//parse temperature
-					tempTemperature = stod(txt);
-					txt = "";
-				}
-			}
-			//fill each vector with the corresponding values
-			place.push_back(tempPlace);
-			year.push_back(tempYear);
-			month.push_back(tempMonth);
-			day.push_back(tempDay);
-			time.push_back(tempTime);
-			temperature.push_back(tempTemperature);
-		}
-		//finished parsing
-		file.close();
-	}
-
+	return temp;
 }
+
+
+
 
 
 int main(int argc, char **argv) {
@@ -125,6 +50,7 @@ int main(int argc, char **argv) {
 		else if (strcmp(argv[i], "-h") == 0) { print_help(); }
 	}
 
+	
 	//detect any potential exceptions
 	try {
 		//Part 2 - host operations
@@ -160,14 +86,10 @@ int main(int argc, char **argv) {
 		vector<int> A = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; //C++11 allows this type of initialisation
 		vector<int> B = { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0 };
 
-		vector<string> place;
-		vector<int> year;
-		vector<int> month;
-		vector<int> day; 
-		vector<string> time; 
-		vector <double> temperature;
+		int datasize = 1873106;
 		char* filepath = "temp_lincolnshire.txt";
-		readFile(filepath, place, year, month, day, time, temperature);
+		float* temperatures;
+		temperatures = read(filepath, datasize);
 		
 		size_t vector_elements = A.size();//number of elements
 		size_t vector_size = A.size()*sizeof(int);//size in bytes
@@ -200,6 +122,10 @@ int main(int argc, char **argv) {
 		cout << "A = " << A << endl;
 		cout << "B = " << B << endl;
 		cout << "C = " << C << endl;
+		for (int i = 0; i < datasize; i++)
+		{
+			cout << temperatures[i] << endl;
+		}
 	}
 	catch (cl::Error err) {
 		cerr << "ERROR: " << err.what() << ", " << getErrorString(err.err()) << endl;
