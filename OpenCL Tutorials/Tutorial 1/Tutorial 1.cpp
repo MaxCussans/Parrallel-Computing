@@ -98,11 +98,11 @@ int main(int argc, char **argv) {
 
 
 
-		size_t local_size = datasize;
+		size_t local_size = 128;
 		cout << "Local Size = " << local_size << endl;
-
+		
 		size_t padding_size = datasize % local_size;
-
+		
 		//if the input vector is not a multiple of the local_size
 		//insert additional neutral elements (0 for addition) so that the total will not be affected
 		if (padding_size) 
@@ -112,40 +112,39 @@ int main(int argc, char **argv) {
 			//append that extra vector to our input
 			temps.insert(temps.end(), temperatures_ext.begin(), temperatures_ext.end());
 		}
-
+		
 		size_t input_elements = datasize;//number of input elements
 		size_t input_size = datasize * sizeof(mytype);//size in bytes
 		size_t nr_groups = input_elements / local_size;
-
+		
 		//host - output
 		std::vector<mytype> B(input_elements);
 		size_t output_size = B.size() * sizeof(mytype);//size in bytes
-
+		
 													   //device - buffers
 		cl::Buffer buffer_A(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, output_size);
-
+		
 		//Part 5 - device operations
-
+		
 		//5.1 copy array A to and initialise other arrays on device memory
 		queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, input_size, &temps[0]);
 		queue.enqueueFillBuffer(buffer_B, 0, 0, output_size);//zero B buffer on device memory
-
+		
 															 //5.2 Setup and execute all kernels (i.e. device code)
 		cl::Kernel kernel_max = cl::Kernel(program, "global_maximums");
 		kernel_max.setArg(0, buffer_A);
 		kernel_max.setArg(1, buffer_B);
-
-		//call all kernels in a sequence
-
-		queue.enqueueNDRangeKernel(kernel_max, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
-
+		
+		
+		queue.enqueueNDRangeKernel(kernel_max, cl::NDRange(input_elements), cl::NDRange(local_size));
+		
 		//5.3 Copy the result from device to host
 		queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, output_size, &B[0]);
 
 		for (int i = 0; i < datasize; i++)
 		{
-			cout << temps[i] << endl;
+			cout << B[0] << endl;
 		}
 	}
 	catch (cl::Error err) {
