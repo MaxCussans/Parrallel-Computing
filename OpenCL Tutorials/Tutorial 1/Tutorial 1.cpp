@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 		queue.enqueueFillBuffer(buffer_B, 0, 0, output_size);//zero B buffer on device memory
 		
 															 //5.2 Setup and execute all kernels (i.e. device code)
-		cl::Kernel kernel_max = cl::Kernel(program, "global_maximums");
+		cl::Kernel kernel_max = cl::Kernel(program, "maximum");
 		kernel_max.setArg(0, buffer_A);
 		kernel_max.setArg(1, buffer_B);
 		
@@ -142,10 +142,8 @@ int main(int argc, char **argv) {
 		//5.3 Copy the result from device to host
 		queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, output_size, &B[0]);
 
-		for (int i = 0; i < datasize; i++)
-		{
 			cout << B[0] << endl;
-		}
+		
 	}
 	catch (cl::Error err) {
 		std::cerr << "ERROR: " << err.what() << ", " << getErrorString(err.err()) << std::endl;

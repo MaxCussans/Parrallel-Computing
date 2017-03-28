@@ -14,7 +14,7 @@ __kernel void reduce_add(__global float* A)
 	}
 }
 
-__kernel void global_maximums(__global int* A, __global int* B)
+__kernel void maximum(__global int* A, __global int* B)
 {
 	int id = get_global_id(0);
 	int N = get_local_size(0);
@@ -23,9 +23,13 @@ __kernel void global_maximums(__global int* A, __global int* B)
 
 	barrier(CLK_GLOBAL_MEM_FENCE); //ensure all values are copied before continuing
 
-	
-	atomic_max(&B[0], A[id]);
-
+	if(id < N)
+	{
+		if(A[id] < B[0])
+		{
+			B[0] = A[id];
+		}
+	}
 }
 
 
