@@ -123,12 +123,17 @@ int main(int argc, char **argv) {
 		std::vector<mytype> D(datasize);
 		std::vector<mytype> E(datasize);
 		std::vector<mytype> F(datasize);
-
+		std::vector<mytype> G(datasize);
+		std::vector<mytype> H(1);
+		std::vector<mytype> I(datasize);
+		std::vector<mytype> J(1);
 		int mean;
 
 		size_t output_size = B.size() * sizeof(mytype);//size in bytes
 		size_t output_sizeD = D.size() * sizeof(mytype);//size in bytes
 		size_t output_sizeF = F.size() * sizeof(mytype);//size in bytes
+		size_t output_sizeH = H.size() * sizeof(mytype);//size in bytes
+		size_t output_sizeJ = J.size() * sizeof(mytype);//size in bytes
 													   //device - buffers
 		cl::Buffer buffer_A(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, output_size);
@@ -194,13 +199,48 @@ int main(int argc, char **argv) {
 		//COPY RESULTS
 		queue.enqueueReadBuffer(buffer_F, CL_TRUE, 0, output_sizeD, &F[0]);
 
+		cl::Buffer buffer_G(context, CL_MEM_READ_ONLY, input_size);
+		cl::Buffer buffer_H(context, CL_MEM_READ_WRITE, output_sizeH);
+		//Part 5 - device operations
 
-			for(int i =0; i < datasize; i++)
-			{
-				cout << "S.D:" << sqrt(F[0] / datasize);
-			}
+		//5.1 copy array A to and initialise other arrays on device memory
+		queue.enqueueWriteBuffer(buffer_G, CL_TRUE, 0, input_size, &temps[0]);
+		queue.enqueueFillBuffer(buffer_H, 0, 0, output_sizeH);
+
+		cl::Kernel kernel_min = cl::Kernel(program, "minimum");
+		kernel_min.setArg(0, buffer_G);
+		kernel_min.setArg(1, buffer_H);
+		kernel_min.setArg(2, cl::Local(local_size * sizeof(mytype)));
+
+		queue.enqueueNDRangeKernel(kernel_min, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
 
 
+		queue.enqueueReadBuffer(buffer_H, CL_TRUE, 0, output_sizeH, &H[0]);
+
+		cl::Buffer buffer_I(context, CL_MEM_READ_ONLY, input_size);
+		cl::Buffer buffer_J(context, CL_MEM_READ_WRITE, output_sizeJ);
+		//Part 5 - device operations
+
+		//5.1 copy array A to and initialise other arrays on device memory
+		queue.enqueueWriteBuffer(buffer_I, CL_TRUE, 0, input_size, &temps[0]);
+		queue.enqueueFillBuffer(buffer_J, 0, 0, output_sizeJ);
+
+		cl::Kernel kernel_max = cl::Kernel(program, "maximum");
+		kernel_max.setArg(0, buffer_I);
+		kernel_max.setArg(1, buffer_J);
+		kernel_max.setArg(2, cl::Local(local_size * sizeof(mytype)));
+
+		queue.enqueueNDRangeKernel(kernel_max, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
+
+
+		queue.enqueueReadBuffer(buffer_J, CL_TRUE, 0, output_sizeJ, &J[0]);
+
+			cout << "Minimum:" << H[0] << endl;
+			
+			cout << "Maximum:" << J[0] << endl;
+
+			cout << "S.D:" << sqrt(F[0] / datasize) << endl;
+			
 			cout << "Mean:" << mean << endl;
 
 			
