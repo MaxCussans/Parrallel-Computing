@@ -50,7 +50,7 @@ __kernel void reduce_add2(__global const int* A, __global int* B, __local int* s
 
 	for(int i =1; i < N; i++)
 	{ 		
-			B[0] += scratch[i];
+			B[0] += scratch[lid];
 			barrier(CLK_LOCAL_MEM_FENCE);	
 	}
 

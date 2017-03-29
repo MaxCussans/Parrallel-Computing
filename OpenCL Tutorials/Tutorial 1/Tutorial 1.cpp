@@ -113,36 +113,41 @@ int main(int argc, char **argv) {
 			temps.insert(temps.end(), temperatures_ext.begin(), temperatures_ext.end());
 		}
 		
-		size_t input_elements = datasize;//number of input elements
+		size_t input_elements = temps.size();//number of input elements
 		size_t input_size = datasize * sizeof(mytype);//size in bytes
 		size_t nr_groups = input_elements / local_size;
 		
 		//host - output
-		std::vector<mytype> B(input_elements);
+		std::vector<mytype> B(1);
+		//std::vector<mytype> C(input_elements);
 		size_t output_size = B.size() * sizeof(mytype);//size in bytes
 		
 													   //device - buffers
 		cl::Buffer buffer_A(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, output_size);
-		
+		//cl::Buffer buffer_C(context, CL_MEM_READ_WRITE, output_size);
 		//Part 5 - device operations
 		
 		//5.1 copy array A to and initialise other arrays on device memory
 		queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, input_size, &temps[0]);
-		queue.enqueueFillBuffer(buffer_B, 0, 0, output_size);//zero B buffer on device memory
+		queue.enqueueFillBuffer(buffer_B, 0, 0, output_size);
+		//queue.enqueueFillBuffer(buffer_C, 0, 0, output_size);
 		
 															 //5.2 Setup and execute all kernels (i.e. device code)
-		cl::Kernel kernel_max = cl::Kernel(program, "maximum");
+		cl::Kernel kernel_max = cl::Kernel(program, "reduce_add2");
 		kernel_max.setArg(0, buffer_A);
 		kernel_max.setArg(1, buffer_B);
+		kernel_max.setArg(2, cl::Local(local_size * sizeof(mytype)));
 		
 		
-		queue.enqueueNDRangeKernel(kernel_max, cl::NDRange(input_elements), cl::NDRange(local_size));
+		queue.enqueueNDRangeKernel(kernel_max, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
 		
 		//5.3 Copy the result from device to host
 		queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, output_size, &B[0]);
 
+
 			cout << B[0] << endl;
+
 		
 	}
 	catch (cl::Error err) {
