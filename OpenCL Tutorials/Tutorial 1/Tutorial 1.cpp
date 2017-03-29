@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
 	}
 
 
+
 	
 
 
@@ -61,7 +62,7 @@ int main(int argc, char **argv) {
 		std::cout << "Running on " << GetPlatformName(platform_id) << ", " << GetDeviceName(platform_id, device_id) << std::endl;
 
 		//create a queue to which we will push commands for the device
-		cl::CommandQueue queue(context);
+		cl::CommandQueue queue(context, CL_QUEUE_PROFILING_ENABLE);
 
 		//2.2 Load & build the device code
 		cl::Program::Sources sources;
@@ -135,6 +136,10 @@ int main(int argc, char **argv) {
 		size_t output_sizeH = H.size() * sizeof(mytype);//size in bytes
 		size_t output_sizeJ = J.size() * sizeof(mytype);//size in bytes
 													   //device - buffers
+
+		cl::Event prof_event;
+
+
 		cl::Buffer buffer_A(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, output_size);
 		//Part 5 - device operations
@@ -150,10 +155,13 @@ int main(int argc, char **argv) {
 		kernel_add.setArg(2, cl::Local(local_size * sizeof(mytype)));
 		
 		
-		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
-		
+		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size), NULL, &prof_event);
+
 		
 		queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, output_size, &B[0]);
+
+		std::cout << GetFullProfilingInfo(prof_event, ProfilingResolution::PROF_NS) << endl;
+		std::cout << "Addition kernel execution time [ns]:" << prof_event.getProfilingInfo<CL_PROFILING_COMMAND_END>() - prof_event.getProfilingInfo<CL_PROFILING_COMMAND_START>() << std::endl << endl;
 
 		mean = B[0] / datasize;
 
@@ -174,10 +182,14 @@ int main(int argc, char **argv) {
 		kernel_var.setArg(3, datasize);
 
 
-		queue.enqueueNDRangeKernel(kernel_var, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
+		queue.enqueueNDRangeKernel(kernel_var, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size), NULL, &prof_event);
+
 
 		//COPY RESULTS
 		queue.enqueueReadBuffer(buffer_D, CL_TRUE, 0, output_sizeD, &D[0]);
+
+		std::cout << GetFullProfilingInfo(prof_event, ProfilingResolution::PROF_NS) << endl;
+		std::cout << "Squared Difference kernel execution time [ns]:" << prof_event.getProfilingInfo<CL_PROFILING_COMMAND_END>() - prof_event.getProfilingInfo<CL_PROFILING_COMMAND_START>() << std::endl << endl;
 		
 		
 
@@ -194,7 +206,7 @@ int main(int argc, char **argv) {
 		kernel_add.setArg(2, cl::Local(local_size * sizeof(mytype)));
 
 
-		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
+		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size), NULL, &prof_event);
 
 		//COPY RESULTS
 		queue.enqueueReadBuffer(buffer_F, CL_TRUE, 0, output_sizeD, &F[0]);
@@ -212,10 +224,13 @@ int main(int argc, char **argv) {
 		kernel_min.setArg(1, buffer_H);
 		kernel_min.setArg(2, cl::Local(local_size * sizeof(mytype)));
 
-		queue.enqueueNDRangeKernel(kernel_min, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
+		queue.enqueueNDRangeKernel(kernel_min, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size), NULL, &prof_event);
 
 
 		queue.enqueueReadBuffer(buffer_H, CL_TRUE, 0, output_sizeH, &H[0]);
+
+		std::cout << GetFullProfilingInfo(prof_event, ProfilingResolution::PROF_NS) << endl;
+		std::cout << "Minimum kernel execution time [ns]:" << prof_event.getProfilingInfo<CL_PROFILING_COMMAND_END>() - prof_event.getProfilingInfo<CL_PROFILING_COMMAND_START>() << std::endl << endl;
 
 		cl::Buffer buffer_I(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_J(context, CL_MEM_READ_WRITE, output_sizeJ);
@@ -230,18 +245,22 @@ int main(int argc, char **argv) {
 		kernel_max.setArg(1, buffer_J);
 		kernel_max.setArg(2, cl::Local(local_size * sizeof(mytype)));
 
-		queue.enqueueNDRangeKernel(kernel_max, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
+		queue.enqueueNDRangeKernel(kernel_max, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size), NULL, &prof_event);
+
 
 
 		queue.enqueueReadBuffer(buffer_J, CL_TRUE, 0, output_sizeJ, &J[0]);
 
-			cout << "Minimum:" << H[0] << endl;
-			
-			cout << "Maximum:" << J[0] << endl;
+		std::cout << GetFullProfilingInfo(prof_event, ProfilingResolution::PROF_NS) << endl;
+		std::cout << "Maximum kernel execution time [ns]:" << prof_event.getProfilingInfo<CL_PROFILING_COMMAND_END>() - prof_event.getProfilingInfo<CL_PROFILING_COMMAND_START>() << std::endl << endl << endl;
 
-			cout << "S.D:" << sqrt(F[0] / datasize) << endl;
+			cout << "Minimum: " << H[0] << endl;
 			
-			cout << "Mean:" << mean << endl;
+			cout << "Maximum: " << J[0] << endl;
+
+			cout << "S.D: " << sqrt(F[0] / datasize) << endl;
+			
+			cout << "Mean: " << mean << endl;
 
 			
 		

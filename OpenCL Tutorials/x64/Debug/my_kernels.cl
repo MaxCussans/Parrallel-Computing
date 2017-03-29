@@ -50,7 +50,8 @@ __kernel void maximum(__global const int* A, __global int* B, __local int* scrat
 
 	barrier(CLK_LOCAL_MEM_FENCE);//ensure all values are copied to local memory
 
-	
+	for(int i =1; i < N; i++)
+	{ 
 	//compare all values with current max
 		if(scratch[lid] > B[0])
 		{
@@ -58,7 +59,7 @@ __kernel void maximum(__global const int* A, __global int* B, __local int* scrat
 			barrier(CLK_LOCAL_MEM_FENCE);
 		}
 
-	
+	}
 
 }
 
@@ -72,7 +73,8 @@ __kernel void minimum(__global const int* A, __global int* B, __local int* scrat
 
 	barrier(CLK_LOCAL_MEM_FENCE);//ensure all values are copied to local memory
 
-
+	for(int i =1; i < N; i++)
+	{ 
 	//compare all values with current min
 		if(scratch[lid] < B[0])
 		{
@@ -80,7 +82,7 @@ __kernel void minimum(__global const int* A, __global int* B, __local int* scrat
 			barrier(CLK_LOCAL_MEM_FENCE);
 		}
 
-	
+	}
 
 }
 
