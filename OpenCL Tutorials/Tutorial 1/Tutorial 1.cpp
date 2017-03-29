@@ -121,11 +121,14 @@ int main(int argc, char **argv) {
 		std::vector<mytype> B(1);
 		std::vector<mytype> C(datasize);
 		std::vector<mytype> D(datasize);
+		std::vector<mytype> E(datasize);
+		std::vector<mytype> F(datasize);
 
 		int mean;
 
 		size_t output_size = B.size() * sizeof(mytype);//size in bytes
 		size_t output_sizeD = D.size() * sizeof(mytype);//size in bytes
+		size_t output_sizeF = F.size() * sizeof(mytype);//size in bytes
 													   //device - buffers
 		cl::Buffer buffer_A(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, output_size);
@@ -173,9 +176,28 @@ int main(int argc, char **argv) {
 		
 		
 
+		cl::Buffer buffer_E(context, CL_MEM_READ_ONLY, input_size);
+		cl::Buffer buffer_F(context, CL_MEM_READ_WRITE, output_sizeF);
+
+
+		queue.enqueueWriteBuffer(buffer_E, CL_TRUE, 0, input_size, &D[0]);
+		queue.enqueueFillBuffer(buffer_F, 0, 0, output_sizeF);
+
+		
+		kernel_add.setArg(0, buffer_E);
+		kernel_add.setArg(1, buffer_F);
+		kernel_add.setArg(2, cl::Local(local_size * sizeof(mytype)));
+
+
+		queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
+
+		//COPY RESULTS
+		queue.enqueueReadBuffer(buffer_F, CL_TRUE, 0, output_sizeD, &F[0]);
+
+
 			for(int i =0; i < datasize; i++)
 			{
-				cout << "S.D:" << D[i];
+				cout << "S.D:" << sqrt(F[0] / datasize);
 			}
 
 

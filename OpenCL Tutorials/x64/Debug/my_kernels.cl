@@ -101,15 +101,16 @@ __kernel void squaredDifference(__global const int* A, __global int* B, int mean
 	
 	if(id < dataSize)
 	{
+	//find difference between mean and values
 		B[id] = A[id] - mean;
 		barrier(CLK_LOCAL_MEM_FENCE);
 	}
 
+	//square the differences 
 	B[id]= B[id] * B[id];
 
-
-	
-
 }
+
+
 
 
