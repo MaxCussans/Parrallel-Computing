@@ -121,12 +121,11 @@ int main(int argc, char **argv) {
 		std::vector<mytype> B(1);
 		std::vector<mytype> C(datasize);
 		std::vector<mytype> D(datasize);
-		std::vector<mytype> E(datasize);
 
 		int mean;
 
 		size_t output_size = B.size() * sizeof(mytype);//size in bytes
-		
+		size_t output_sizeD = D.size() * sizeof(mytype);//size in bytes
 													   //device - buffers
 		cl::Buffer buffer_A(context, CL_MEM_READ_ONLY, input_size);
 		cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, output_size);
@@ -150,45 +149,33 @@ int main(int argc, char **argv) {
 
 		mean = B[0] / datasize;
 
+
+
 		cl::Buffer buffer_C(context, CL_MEM_READ_ONLY, input_size);
-		cl::Buffer buffer_D(context, CL_MEM_READ_WRITE, output_size);
+		cl::Buffer buffer_D(context, CL_MEM_READ_WRITE, output_sizeD);
 
 	
 		queue.enqueueWriteBuffer(buffer_C, CL_TRUE, 0, input_size, &temps[0]);
-		queue.enqueueFillBuffer(buffer_D, 0, 0, output_size);
-
+		queue.enqueueFillBuffer(buffer_D, 0, 0, output_sizeD);
 
 		//variance
-		cl::Kernel kernel_var = cl::Kernel(program, "variance");
+		cl::Kernel kernel_var = cl::Kernel(program, "squaredDifference");
 		kernel_var.setArg(0, buffer_C);
 		kernel_var.setArg(1, buffer_D);
 		kernel_var.setArg(2, mean);
-		kernel_var.setArg(3, cl::Local(local_size * sizeof(mytype)));
+		kernel_var.setArg(3, datasize);
 
 
 		queue.enqueueNDRangeKernel(kernel_var, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
 
 		//COPY RESULTS
-		queue.enqueueReadBuffer(buffer_D, CL_TRUE, 0, output_size, &D[0]);
+		queue.enqueueReadBuffer(buffer_D, CL_TRUE, 0, output_sizeD, &D[0]);
 		
-		//cl::Buffer buffer_E(context, CL_MEM_READ_ONLY, input_size);
-		//cl::Buffer buffer_F(context, CL_MEM_READ_WRITE, output_size);
-		//
-		////COPY RESULTS FROM VARIANCE KERNEL TO GET A VECTOR OF X-MEAN SQUARED
-		//queue.enqueueWriteBuffer(buffer_E, CL_TRUE, 0, input_size, &D[0]);
-		//queue.enqueueFillBuffer(buffer_F, 0, 0, output_size);
-		//
-		//kernel_add.setArg(0, buffer_E);
-		//kernel_add.setArg(1, buffer_F);
-		//kernel_add.setArg(2, cl::Local(local_size * sizeof(mytype)));
-		//
-		//queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(input_elements), cl::NDRange(local_size));
-		//
-		//queue.enqueueReadBuffer(buffer_F, CL_TRUE, 0, output_size, &E[0]);
+		
 
 			for(int i =0; i < datasize; i++)
 			{
-				cout << "S.D:" << D[i] << endl;
+				cout << "S.D:" << D[i];
 			}
 
 

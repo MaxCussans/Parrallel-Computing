@@ -95,21 +95,20 @@ __kernel void minimum(__global const int* A, __global int* B, __local int* scrat
 
 //value - mean then square each value and divide by the sample THEN sqrt ~5.98
 
-__kernel void variance(__global const int* A, __global int* B, int mean, __local int* scratch)
+__kernel void squaredDifference(__global const int* A, __global int* B, int mean, int dataSize)
 {
 	int id = get_global_id(0);
-	int lid = get_local_id(0);
-	int N = get_local_size(0);
+	
+	if(id < dataSize)
+	{
+		B[id] = A[id] - mean;
+		barrier(CLK_LOCAL_MEM_FENCE);
+	}
 
-	scratch[lid] = A[id];
+	B[id]= B[id] * B[id];
+
 
 	
-	barrier(CLK_LOCAL_MEM_FENCE);//ensure all values are copied to local memory
-
-	for (int i =1; i < N; i++)
-	{
-		B[i-1] = scratch[lid] - mean;
-	}
 
 }
 
